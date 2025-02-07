@@ -117,3 +117,35 @@ data "cloudinit_config" "init" {
     content = file("${path.module}/init.sh")
   }
 }
+
+# Define the virtual machine
+resource "azurerm_linux_virtual_machine" "web_vm" {
+  name = "${var.labelPrefix}-A05-VM"
+  location = azurerm_resource_group.rg.location
+  resource_group_name = azurerm_resource_group.rg.name
+  size = "Standard_B1s"
+  admin_username = var.admin_username
+  disable_password_authentication = true
+
+  network_interface_ids = [azurerm_network_interface.web_nic.id]
+
+  admin_ssh_key {
+    username = var.admin_username
+    public_key = file("D:/wuqq/Documents/lv2/8918/ssh/id_rsa.pub") # use a local folder for the key
+  }
+
+  os_disk {
+    name = "${var.labelPrefix}-A05-Disk"
+    caching = "ReadWrite"
+    storage_account_type = "Standard_LRS"
+  }
+
+  source_image_reference {
+    publisher = "Canonical"
+    offer     = "0001-com-ubuntu-server-jammy"
+    sku       = "22_04-lts-gen2"
+    version   = "latest"
+  }
+
+  custom_data = data.cloudinit_config.init.rendered
+}
