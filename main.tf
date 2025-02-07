@@ -105,3 +105,15 @@ resource "azurerm_network_interface_security_group_association" "web_nic_assoc" 
   network_interface_id = azurerm_network_interface.web_nic.id
   network_security_group_id = azurerm_network_security_group.web_nsg.id
 }
+
+# Define the init script template
+data "cloudinit_config" "init" {
+  gzip = false
+  base64_encode = true
+
+  part {
+    filename = "init.sh"
+    content_type = "text/x-shellscript"
+    content = file("${path.module}/init.sh")
+  }
+}
